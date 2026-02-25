@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 
 /**
  * Servicio con la lógica de negocio para Citas.
- * Incluye validación de fechas pasadas.
+ * Incluye validación de fechas pasadas solo en creación
+ * o cuando la fecha cambia en actualización.
  */
 @Service
 public class CitaService {
@@ -74,7 +75,6 @@ public class CitaService {
             throw new IllegalArgumentException("No se permiten citas en fechas pasadas");
         }
 
-        // Verificar que la mascota existe
         Mascota mascota = mascotaRepository.findById(request.getIdMascota())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Mascota no encontrada con ID: " + request.getIdMascota()));
@@ -85,7 +85,6 @@ public class CitaService {
         cita.setMotivo(request.getMotivo());
         cita.setMascota(mascota);
 
-        // Si se envía estado, asignarlo; si no, por defecto PROGRAMADA
         if (request.getEstado() != null && !request.getEstado().isEmpty()) {
             cita.setEstado(Cita.EstadoCita.valueOf(request.getEstado()));
         }
@@ -94,14 +93,19 @@ public class CitaService {
         return convertToDTO(guardada);
     }
 
-    /** Actualiza una cita existente */
+    /**
+     * Actualiza una cita existente.
+     * VALIDACIÓN: Solo bloquea fechas pasadas si la fecha cambió.
+     * Permite cambiar estado (ej: PROGRAMADA → COMPLETADA) aunque la fecha sea pasada.
+     */
     public CitaDTO updateCita(Long id, CitaRequestDTO request) {
         Cita cita = citaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Cita no encontrada con ID: " + id));
 
-        // Validación de fecha pasada solo si se cambia la fecha
-        if (request.getFecha().isBefore(LocalDate.now())) {
+        // ===== VALIDACIÓN: solo si la fecha realmente cambió =====
+        boolean fechaCambio = !request.getFecha().equals(cita.getFecha());
+        if (fechaCambio && request.getFecha().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("No se permiten citas en fechas pasadas");
         }
 
