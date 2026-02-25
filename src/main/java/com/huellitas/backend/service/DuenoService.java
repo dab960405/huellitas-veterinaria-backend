@@ -6,6 +6,7 @@ import com.huellitas.backend.dto.DuenoRequestDTO;
 import com.huellitas.backend.exception.ResourceNotFoundException;
 import com.huellitas.backend.model.Dueno;
 import com.huellitas.backend.repository.DuenoRepository;
+import com.huellitas.backend.repository.MascotaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * Servicio con la lógica de negocio para Dueños.
  * Convierte entre entidades y DTOs para evitar
- * problemas de lazy loading en la serialización JSON.
+ * LazyInitializationException en la serialización JSON.
  */
 @Service
 public class DuenoService {
@@ -23,9 +24,13 @@ public class DuenoService {
     @Autowired
     private DuenoRepository duenoRepository;
 
+    @Autowired
+    private MascotaRepository mascotaRepository;
+
     /**
      * Convierte una entidad Dueno a DuenoDTO.
-     * Incluye el total de mascotas registradas.
+     * Cuenta las mascotas con query directa al repositorio,
+     * sin tocar la colección lazy del modelo.
      */
     private DuenoDTO convertToDTO(Dueno dueno) {
         DuenoDTO dto = new DuenoDTO();
@@ -36,8 +41,9 @@ public class DuenoService {
         dto.setTelefono(dueno.getTelefono());
         dto.setEmail(dueno.getEmail());
         dto.setDireccion(dueno.getDireccion());
-        // Cuenta las mascotas de forma segura (null-safe)
-        dto.setTotalMascotas(dueno.getMascotas() != null ? dueno.getMascotas().size() : 0);
+        // Query directa: no toca la lista lazy de la entidad
+        int total = mascotaRepository.findByDuenoIdDueno(dueno.getIdDueno()).size();
+        dto.setTotalMascotas(total);
         return dto;
     }
 
