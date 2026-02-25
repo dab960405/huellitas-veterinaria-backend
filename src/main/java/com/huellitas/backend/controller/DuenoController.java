@@ -1,7 +1,8 @@
 // controller/DuenoController.java
 package com.huellitas.backend.controller;
 
-import com.huellitas.backend.model.Dueno;
+import com.huellitas.backend.dto.DuenoDTO;
+import com.huellitas.backend.dto.DuenoRequestDTO;
 import com.huellitas.backend.service.DuenoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,9 +53,10 @@ public class DuenoController {
      * POST /api/duenos
      */
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createDueno(@Valid @RequestBody Dueno dueno) {
+    public ResponseEntity<Map<String, Object>> createDueno(
+            @Valid @RequestBody DuenoRequestDTO request) {
         Map<String, Object> response = new HashMap<>();
-        Dueno nuevoDueno = duenoService.createDueno(dueno);
+        DuenoDTO nuevoDueno = duenoService.createDueno(request);
         response.put("success", true);
         response.put("message", "Dueño creado exitosamente");
         response.put("data", nuevoDueno);
@@ -69,9 +70,9 @@ public class DuenoController {
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateDueno(
             @PathVariable Long id,
-            @Valid @RequestBody Dueno duenoDetails) {
+            @Valid @RequestBody DuenoRequestDTO request) {
         Map<String, Object> response = new HashMap<>();
-        Dueno duenoActualizado = duenoService.updateDueno(id, duenoDetails);
+        DuenoDTO duenoActualizado = duenoService.updateDueno(id, request);
         response.put("success", true);
         response.put("message", "Dueño actualizado exitosamente");
         response.put("data", duenoActualizado);
