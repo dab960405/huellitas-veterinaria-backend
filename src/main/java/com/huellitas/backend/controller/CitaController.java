@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * Controlador REST para gestionar Citas veterinarias.
  * Base path: /api/citas
+ * Los errores son manejados globalmente por GlobalExceptionHandler.
  */
 @RestController
 @RequestMapping("/api/citas")
@@ -56,17 +57,11 @@ public class CitaController {
     public ResponseEntity<Map<String, Object>> createCita(
             @Valid @RequestBody CitaRequestDTO request) {
         Map<String, Object> response = new HashMap<>();
-        try {
-            CitaDTO nuevaCita = citaService.createCita(request);
-            response.put("success", true);
-            response.put("message", "Cita creada exitosamente");
-            response.put("data", nuevaCita);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+        CitaDTO nuevaCita = citaService.createCita(request);
+        response.put("success", true);
+        response.put("message", "Cita creada exitosamente");
+        response.put("data", nuevaCita);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     /**
@@ -78,17 +73,11 @@ public class CitaController {
             @PathVariable Long id,
             @Valid @RequestBody CitaRequestDTO request) {
         Map<String, Object> response = new HashMap<>();
-        try {
-            CitaDTO citaActualizada = citaService.updateCita(id, request);
-            response.put("success", true);
-            response.put("message", "Cita actualizada exitosamente");
-            response.put("data", citaActualizada);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+        CitaDTO citaActualizada = citaService.updateCita(id, request);
+        response.put("success", true);
+        response.put("message", "Cita actualizada exitosamente");
+        response.put("data", citaActualizada);
+        return ResponseEntity.ok(response);
     }
 
     /**
